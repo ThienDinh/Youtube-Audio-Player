@@ -35,7 +35,7 @@ public class GoRetriever {
             @Override
             public void run() {
                 try {
-                    URL url = new URL("http://engramtd.com?id=" + videoId);
+                    URL url = new URL("http://192.168.2.24?id=" + videoId);
                     HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
                     int code = httpCon.getResponseCode();
                     String message = httpCon.getResponseMessage();

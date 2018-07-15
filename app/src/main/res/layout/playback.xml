@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal">
+    <ImageView
+        android:id="@+id/btn_repeat"
+        android:layout_width="@dimen/playback_icons"
+        android:layout_height="@dimen/playback_icons"
+        android:src="@drawable/repeat_all"/>
+    <ImageView
+        android:id="@+id/btn_previous"
+        android:layout_width="@dimen/playback_icons"
+        android:layout_height="@dimen/playback_icons"
+        android:src="@drawable/skip_previous"/>
+    <ImageView
+        android:id="@+id/btn_play"
+        android:layout_width="@dimen/playback_icons"
+        android:layout_height="@dimen/playback_icons"
+        android:src="@drawable/play"/>
+    <ImageView
+        android:id="@+id/btn_next"
+        android:layout_width="@dimen/playback_icons"
+        android:layout_height="@dimen/playback_icons"
+        android:src="@drawable/skip_next"/>
+</LinearLayout>

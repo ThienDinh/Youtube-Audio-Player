@@ -1,6 +1,7 @@
 package com.engramtd.tdinh.youtubeaudioplayer;
 
 import android.media.MediaPlayer;
+import android.media.TimedMetaData;
 import android.util.Log;
 
 import java.io.IOException;
@@ -19,10 +20,12 @@ public class YoutubePlayer {
     private Playlist currentPlayList;
     private MediaPlayer mp;
     private int repeatMode;
-    private OnBeginPlayingListener beginListener;
+    private OnPlaybackListener playbackListener;
 
-    public interface OnBeginPlayingListener{
-        public void onBeginPlaying(YoutubeVideo video);
+    public interface OnPlaybackListener{
+        public void onReadyToPlay(YoutubeVideo video);
+        public void onStartPlaying(int duration);
+        public void onPositionUpdated(int currentPosition);
     }
 
     public YoutubePlayer(){
@@ -115,8 +118,14 @@ public class YoutubePlayer {
         return false;
     }
 
-    public void setOnBeginPlaying(OnBeginPlayingListener listener){
-        this.beginListener = listener;
+    public void seek(int position){
+        if(position < mp.getDuration()) {
+            mp.seekTo(position);
+        }
+    }
+
+    public void setOnBeginPlaying(OnPlaybackListener listener){
+        this.playbackListener = listener;
     }
 
     /**
@@ -125,8 +134,8 @@ public class YoutubePlayer {
      */
     public void play(int index){
         if(index == -1) return;
-        if(beginListener != null){
-            beginListener.onBeginPlaying((YoutubeVideo)currentPlayList.get(index));
+        if(playbackListener != null){
+            playbackListener.onReadyToPlay((YoutubeVideo)currentPlayList.get(index));
         }
         currentPlayingIndex = index;
         final YoutubeVideo ytVideo = (YoutubeVideo) currentPlayList.get(currentPlayingIndex);
@@ -138,9 +147,27 @@ public class YoutubePlayer {
                     if (mp != null) {
                         mp.reset();
                         mp.setDataSource(ytVideo.getLocalAudioSrc());
+
+                        final Thread positionThread = new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    while (mp.isPlaying()) {
+                                        int current = mp.getCurrentPosition();
+                                        playbackListener.onPositionUpdated(current);
+                                        Thread.sleep(1000);
+                                    }
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                    Log.i("engramtd_log", e.getMessage());
+                                }
+                            }
+                        });
+
                         mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                             @Override
                             public void onCompletion(MediaPlayer mediaPlayer) {
+                                playbackListener.onPositionUpdated(0);
                                 int nextIndex = next();
                                 if(nextIndex > -1){
                                     currentPlayingIndex = nextIndex;
@@ -154,7 +181,10 @@ public class YoutubePlayer {
                             }
                         });
                         mp.prepare();
+                        Log.i("engramtd_log", "Duration:" + mp.getDuration());
+                        playbackListener.onStartPlaying(mp.getDuration());
                         mp.start();
+                        positionThread.start();
                     }
                 } catch (IOException e) {
                     Log.i("engramtd_log", e.getMessage());
